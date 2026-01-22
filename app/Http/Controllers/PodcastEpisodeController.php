@@ -23,7 +23,7 @@ class PodcastEpisodeController extends Controller
         ]);
 
         switch ($request->type) {
-            case EventType::EPISODE_DOWNLOADED:
+            case EventType::EPISODE_DOWNLOADED->value:
                 return $this->processDownload($request->all());
             default:
                 Log::info("Unknown event type found: {$request->type}");
@@ -37,17 +37,17 @@ class PodcastEpisodeController extends Controller
     protected function processDownload(array $data)
     {
         if (Download::where('event_id', $data['event_id'])->exists()) {
-            return response()->json(['message' => 'Download already exists.'], 422);
+            return response()->json(['message' => 'Download already exists.'], 500);
         }
 
         Download::create([
             'event_id' => $data['event_id'],
-            'podcast_id' => $data['podcast_id'],
-            'episode_id' => $data['episode_id'],
+            'podcast_id' => $data['data']['podcast_id'],
+            'episode_id' => $data['data']['episode_id'],
             'occurred_at' => $data['occurred_at'],
         ]);
 
-        return response()->json(['message' => 'Successfully processed download.'], 200);
+        return response()->json(['message' => 'Successfully processed download.'], 201);
     }
 
     public function stats(Request $request)
