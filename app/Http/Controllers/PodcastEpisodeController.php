@@ -12,7 +12,7 @@ enum EventType: string {
 
 class PodcastEpisodeController extends Controller
 {
-    public function index(Request $request)
+    public function webhookHandler(Request $request)
     {
         $request->validate([
             'type' => 'required|string',
@@ -48,5 +48,10 @@ class PodcastEpisodeController extends Controller
         ]);
 
         return response()->json(['message' => 'Successfully processed download.'], 200);
+    }
+
+    public function stats(Request $request)
+    {
+        return response()->json(['message' => 'Stats!'], 200);
     }
 }
