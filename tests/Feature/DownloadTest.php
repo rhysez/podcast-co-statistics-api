@@ -41,6 +41,6 @@ test('webhook stores data successfully', function () {
 
     $response = $this->postJson('/api/webhook', $payload);
 
-    $response->assertStatus(201);
+    $response->assertStatus(202);
     $this->assertDatabaseCount('downloads', 1);
 });
