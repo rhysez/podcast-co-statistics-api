@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\ProcessPodcastEpisodeDownload;
+use App\Jobs\ProcessDownload;
 use App\Models\Download;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +28,7 @@ class PodcastEpisodeController extends Controller
                 if (Download::where('event_id', $request->event_id)->exists()) {
                     return response()->json(['message' => 'Episode already downloaded'], 400);
                 }
-                ProcessPodcastEpisodeDownload::dispatch($request->all());
+                ProcessDownload::dispatch($request->all());
                 return response()->json(['message' => 'Webhook accepted'], 202);
             default:
                 Log::info("Unknown event type found: {$request->type}");

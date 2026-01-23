@@ -22,23 +22,15 @@ This API is containerised using Docker. There are multiple reasons why I would c
 
 This first part of this task requires a webhook that can be interfaced with via a POST request.
 To ensure that this endpoint is maintainable for future extension, I created an enum which is
-responsible for defining the potential event types. 
+responsible for defining the potential event types. If a new event type needs to be added, it can be added as a variant to 
+the enum. The event type of the request is checked using a switch statement.
 ```php
 enum EventType: string {
     case EPISODE_DOWNLOADED = 'episode.downloaded';
 }
 ```
 
-In `PodcastEpisodeController`, the `webhook` method is responsible for validating the download data and storing it in the 
-database in a format that can be easily queried in the future. 
 
-In order to improve the response time of the endpoint, I made sure that the actual creation of the download record in the
-database is handled in a Redis queue using a job named `ProcessPodcastEpisodeDownload`. As soon as the webhook validates 
-the JSON, and also validates that the episode hasn't already been downloaded, the job is dispatched to the queue. This ensures
-that the user only needs to wait for indication that the request was valid, rather than wait for the download record itself
-to be created.
-
-If the event hasn't been defined, an error is returned:
 ```php
         switch ($request->type) {
             case EventType::EPISODE_DOWNLOADED->value:
@@ -53,6 +45,35 @@ If the event hasn't been defined, an error is returned:
         }
 ```
 
+In `PodcastEpisodeController`, the `webhook` method is responsible for validating the download data and storing it in the 
+database in a format that can be easily queried in the future. 
+
+In order to improve the response time of the endpoint, I made sure that the actual creation of the download record in the
+database is handled in a Redis queue using a job named `ProcessPodcastEpisodeDownload`. As soon as the webhook validates 
+the JSON, and also validates that the episode hasn't already been downloaded, the job is dispatched to the queue. This ensures
+that the user only needs to wait for indication that the request was valid, rather than wait for the download record itself
+to be created.
+
+
 When the download record is stored, the `data` field is flattened so that it becomes two columns; `episode_id` and `podcast_id`. 
 This is so that these two fields can be queried more easily than if they were nested as a JSON blob in one column.
+```php
+class ProcessPodcastEpisodeDownload implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public function __construct(
+        protected array $payload
+    ) {}
+
+    public function handle(): void
+    {
+        Download::create([
+            'event_id'    => $this->payload['event_id'],
+            'podcast_id'  => $this->payload['data']['podcast_id'],
+            'episode_id'  => $this->payload['data']['episode_id'],
+            'occurred_at' => $this->payload['occurred_at'],
+        ]);
+    }
+}
+```
