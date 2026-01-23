@@ -22,7 +22,7 @@ This API is containerised using Docker. There are multiple reasons why I would c
 This is a list of the notable classes used in the system:
 
 - **Download**: Responsible for representing a model record in the 'downloads' table. 
-- **PodcastEpisodeController**: Responsible for handling the requests associated with a PodcastEpisode, such as the webhook and stats.
+- **PodcastEpisodeController**: Responsible for handling the requests associated with a podcast episode, such as the webhook and stats.
 - **ProcessDownload**: Responsible for handling a queueable job where a PodcastEpisodeDownload record is created.
 
 #### Part 1: Storing download data with a webhook
