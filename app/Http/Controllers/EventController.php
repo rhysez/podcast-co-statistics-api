@@ -7,6 +7,8 @@ use App\Models\Download;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+// If more event types are required, we can just extend this enum
+// And then evaluate the variants in the switch used in webhookHandler
 enum EventType: string {
     case EPISODE_DOWNLOADED = 'episode.downloaded';
 }
