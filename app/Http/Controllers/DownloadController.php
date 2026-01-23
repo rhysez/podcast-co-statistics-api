@@ -43,10 +43,11 @@ class DownloadController extends Controller
         $defaultValueForNoDownloads = 0;
 
         foreach ($period as $date) {
-            $formattedDate = $date->format('d-m-y');
+            $dbDate = $date->format('Y-m-d');
+            $displayDate = $date->format('d-m-Y');
             $tsData[] = [
-                'date'  => $formattedDate,
-                'count' => $downloadCountsByDate->get($formattedDate, $defaultValueForNoDownloads),
+                'date'  => $displayDate,
+                'download_count' => $downloadCountsByDate->get($dbDate, $defaultValueForNoDownloads),
             ];
         }
 
