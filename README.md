@@ -1,7 +1,6 @@
 ### Design document for the Radio.co take home task
 
 
-
 This design document has been written as part of my implementation of the take-home task given to me by Radio.co. I wanted to create this design document so that I could get my thoughts down in writing, explain my decisions and document any areas of improvement. At Quantavia, I will sometimes write design documents for certain features, so I thought it would be appropriate to do the same here.
 
 For this task I’ve chosen to use Laravel as the backend framework due to my existing familiarity with it.
@@ -17,6 +16,14 @@ This API is containerised using Docker. There are multiple reasons why I would c
 - Dependencies are installed in the container, not directly on the host’s machine. This means that the host machine’s dependencies don’t conflict with that of the container, and the container only has the dependencies that it needs to run the API. 
 
 - If this were being deployed to production and scaled up, we would get the benefit of container orchestration solutions like Kubernetes, which would allow us to automate the scaling up/down of services (pods) to fit the traffic. 
+
+#### Notable classes
+
+This is a list of the notable classes used in the system:
+
+- **Download**: Responsible for representing a model record in the 'downloads' table. 
+- **PodcastEpisodeController**: Responsible for handling the requests associated with a PodcastEpisode, such as the webhook and stats.
+- **ProcessDownload**: Responsible for handling a queueable job where a PodcastEpisodeDownload record is created.
 
 #### Part 1: Storing download data with a webhook
 
@@ -37,7 +44,7 @@ enum EventType: string {
                 if (Download::where('event_id', $request->event_id)->exists()) {
                     return response()->json(['message' => 'Episode already downloaded'], 400);
                 }
-                ProcessPodcastEpisodeDownload::dispatch($request->all());
+                ProcessDownload::dispatch($request->all());
                 return response()->json(['message' => 'Webhook accepted'], 202);
             default:
                 Log::info("Unknown event type found: {$request->type}");
