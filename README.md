@@ -11,7 +11,7 @@ For this task I’ve chosen to use Laravel as the backend framework due to my ex
 3. Migrate your database and subsequently seed it using `sail artisan migrate:fresh --seed`. 
 4. Run the tests using `sail test`. 
 
-My `.env` is slightly different to `.env.example` it contains the database credentials for MariaDB, which I chose to use for this task. If you need this during the interview, please let me know.
+My `.env` is slightly different to `.env.example` as it contains the database credentials for MariaDB, which I chose to use for this task. If you need this during the interview, please let me know.
 
 While working on this task, I used Postman to interface with the API and check response data.
 
@@ -33,6 +33,9 @@ This is a list of the notable classes used in the system:
 - **DownloadController**: Responsible for providing time series data for download records over time.
 - **EventController**: Responsible for handling the requests associated with a podcast episode, such as the webhook and stats.
 - **ProcessDownload**: Responsible for handling a queueable job where a PodcastEpisodeDownload record is created.
+- Test classes are implemented in `tests/Feature/*`.
+- Factory classes are implemented in `database/factories/*`
+- Seeder classes are implemented in `database/seeders/*`
 
 ### Part 1: Storing download data with a webhook
 
@@ -94,7 +97,7 @@ class ProcessDownload implements ShouldQueue
 }
 ```
 
-### Part 2: Providing time-series down data to the client
+### Part 2: Providing time-series data to the client
 
 This part of the task requires implementation of a GET endpoint where the client can request time-series download data.
 
