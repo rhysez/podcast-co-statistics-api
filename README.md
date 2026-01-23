@@ -65,7 +65,7 @@ to be created.
 When the download record is stored, the `data` field is flattened so that it becomes two columns; `episode_id` and `podcast_id`. 
 This is so that these two fields can be queried more easily than if they were nested as a JSON blob in one column.
 ```php
-class ProcessPodcastEpisodeDownload implements ShouldQueue
+class ProcessDownload implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
