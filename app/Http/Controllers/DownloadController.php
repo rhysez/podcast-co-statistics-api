@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Download;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DownloadController extends Controller
 {
@@ -27,7 +29,34 @@ class DownloadController extends Controller
 
         $downloadStats = Download::where('episode_id', $episodeId)
             ->whereBetween('occurred_at', [$startDate, $endDate])
+            ->select([
+                DB::raw('DATE(occurred_at) as date'),
+                DB::raw('COUNT(*) as download_count')
+            ])
             ->groupBy('date')
-            ->orderBy('occurred_at', 'asc');
+            ->orderBy('occurred_at', 'ASC')
+            ->get();
+
+        $downloadCountsByDate = $downloadStats->pluck('download_count', 'date');
+        $tsData = [];
+        $period = CarbonPeriod::create($startDate, '1 day', $endDate);
+        $defaultValueForNoDownloads = 0;
+
+        foreach ($period as $date) {
+            $formattedDate = $date->format('DD-MMM-YY');
+            $tsData[] = [
+                'date'  => $formattedDate,
+                'count' => $downloadCountsByDate->get($formattedDate, $defaultValueForNoDownloads),
+            ];
+        }
+
+        return response()->json([
+            'episode_id' => $episodeId,
+            'range' => [
+                'start' => $startDate?->toIso8601String(),
+                'end'   => $endDate?->toIso8601String(),
+            ],
+            'data' => $tsData
+        ]);
     }
 }
