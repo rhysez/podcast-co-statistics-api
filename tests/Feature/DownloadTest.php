@@ -7,21 +7,44 @@ use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
-test('can create a download record by injecting valid request data', function () {
-    $data = [
-        'event_id' => Str::uuid()->toString(),
-        'podcast_id' => Str::uuid()->toString(),
-        'episode_id' => Str::uuid()->toString(),
-        'occurred_at' => now()->toIso8601String()
-    ];
+test('can receive time series data without specifying start and end date', function () {
+    // This is the UUID of the episode created by DownloadSeeder
+    // In production, we wouldn't do this, this is just for the interview demo
+    $seededEpisodeId = '88a0e4c0-0000-41d4-a716-446655440000';
 
-    Download::create($data);
-
-    $this->assertDatabaseHas('downloads', [
-        'event_id' => $data['event_id'],
-        'podcast_id' => $data['podcast_id'],
-        'episode_id' => $data['episode_id'],
+    $response = $this->getJson("/api/episodes/{$seededEpisodeId}/stats");
+    $response->assertStatus(200);
+    $response->assertJsonStructure([
+        'episode_id',
+        'range' => [
+            'start',
+            'end'
+        ],
+        'data'
     ]);
 });
+
+test('can receive time series data with start and end date', function () {
+    $seededEpisodeId = '88a0e4c0-0000-41d4-a716-446655440000';
+
+    $startDate = Carbon::now()->subDays(14)->startOfDay();
+    $endDate = Carbon::now()->addDays(14)->endOfDay();
+
+    $response = $this->getJson("/api/episodes/{$seededEpisodeId}/stats", [
+        'start_date' => $startDate,
+        'end_date' => $endDate
+    ]);
+    $response->assertStatus(200);
+    $response->assertJsonStructure([
+        'episode_id',
+        'range' => [
+            'start',
+            'end'
+        ],
+        'data'
+    ]);
+});
+
+
 
 

@@ -31,7 +31,7 @@ class EventController extends Controller
                     return response()->json(['message' => 'Episode already downloaded'], 400);
                 }
                 ProcessDownload::dispatch($request->all());
-                return response()->json(['message' => 'Webhook accepted'], 202);
+                return response()->json(['message' => 'Episode download has been queued for processing'], 202);
             default:
                 Log::info("Unknown event type found: {$request->type}");
                 return response()->json(['message' => 'Unknown event type found.'], 422);

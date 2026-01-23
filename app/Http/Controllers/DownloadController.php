@@ -17,16 +17,14 @@ class DownloadController extends Controller
             'end_date'   => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        // If the client doesn't provide start_date, we try to find the first download and go from there
-        // Otherwise we just start from today's date
+        // If the client doesn't provide start_date, we start from 7 days ago
         if ($request->filled('start_date')) {
             $startDate = Carbon::parse($request->start_date)->startOfDay();
         } else {
-            $firstDownload = Download::where('episode_id', $episodeId)->min('occurred_at');
-            $startDate = $firstDownload ? Carbon::parse($firstDownload)->startOfDay() : Carbon::now();
+            $startDate = Carbon::now()->subDays(7)->startOfDay();
         }
 
-        // Same principle as above for end_date
+        // And if client doesn't provide end_date, we end on today
         if ($request->filled('end_date')) {
             $endDate = Carbon::parse($request->end_date)->endOfDay();
         } else {
