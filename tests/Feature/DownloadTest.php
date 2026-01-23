@@ -17,9 +17,11 @@ test('can create a download record by injecting valid request data', function ()
 
    Download::create($data);
 
-   $this->assertDatabaseHas('downloads', [
-      'event_id' => $data['event_id'],
-   ]);
+    $this->assertDatabaseHas('downloads', [
+        'event_id' => $data['event_id'],
+        'podcast_id' => $data['podcast_id'],
+        'episode_id' => $data['episode_id'],
+    ]);
 });
 
 
