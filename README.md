@@ -13,6 +13,7 @@ For this task I’ve chosen to use Laravel as the backend framework due to my ex
 
 My `.env` is slightly different to `.env.example` it contains the database credentials for MariaDB, which I chose to use for this task. If you need this during the interview, please let me know.
 
+While working on this task, I used Postman to interface with the API and check response data.
 
 ### Containerisation
 
@@ -185,3 +186,13 @@ Once I'd instantiated the `CarbonPeriod`, I just needed to iterate over it and p
 
 Another motivation for using `CarbonPeriod` was so that the frontend team would have access to every day during that period, rather than only the days where the episode was downloaded. 
 For these particular days, their `download_count` was assigned to zero (or `defaultValueForNoDownloads`).
+
+### What I would do differently/improve if this were to be deployed to production
+
+- I would construct the models, relationships, and tests required for a Podcast and Episode (alongside Download). This would make the API more maintainable, especially if podcast-specific or episode-specific features were to be added. It would allow us to aggregate data based on the relationships between podcasts, episodes and downloads, rather than purely downloads.
+- I would improve the flexibility of the `start_date` and `end_date` query parameters to ensure that each parameter could be provided in isolation. 
+- I would add code linting via Laravel Pint to ensure that the code is formatted/linted during CI/CD. I would also do the same for unit tests.
+- I would consider adding pagination for large time series data sets. At the moment, there is nothing stopping somebody from requesting data for an extraordinarily long time period, and this could lead to long response times. To help reduce response times I would paginate the responses and allow the frontend team to control this pagination via query parameters like `start` and `limit`.
+- If very large data sets were requested, I would probably try to cache this data using Redis. I would probably set a lifetime on the cached data so that it may be refreshed once the lifetime expires. This is really easy to do in Laravel because `Cache::get()` can take a closure which will query the database if the cache key doesn't exist.
+- I would ensure that the API is sufficiently rate-limited. This is done by default in Laravel, however I would communicate with the frontend team to establish a sensible rate limit requirement.
+
