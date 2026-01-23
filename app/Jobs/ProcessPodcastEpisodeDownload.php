@@ -19,10 +19,6 @@ class ProcessPodcastEpisodeDownload implements ShouldQueue
 
     public function handle(): void
     {
-        if (Download::where('event_id', $this->payload['event_id'])->exists()) {
-            return;
-        }
-
         Download::create([
             'event_id'    => $this->payload['event_id'],
             'podcast_id'  => $this->payload['data']['podcast_id'],

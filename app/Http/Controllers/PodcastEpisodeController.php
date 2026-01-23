@@ -25,6 +25,9 @@ class PodcastEpisodeController extends Controller
 
         switch ($request->type) {
             case EventType::EPISODE_DOWNLOADED->value:
+                if (Download::where('event_id', $request->event_id)->exists()) {
+                    return response()->json(['message' => 'Episode already downloaded'], 400);
+                }
                 ProcessPodcastEpisodeDownload::dispatch($request->all());
                 return response()->json(['message' => 'Webhook accepted'], 202);
             default:
