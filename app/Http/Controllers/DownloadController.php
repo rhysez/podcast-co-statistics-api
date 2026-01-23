@@ -13,8 +13,19 @@ class DownloadController extends Controller
     public function index(Request $request, string $episodeId)
     {
         $request->validate([
-            'start_date' => 'nullable|date|before_or_equal:end_date',
-            'end_date'   => 'nullable|date|after_or_equal:start_date',
+            'start_date' => [
+                'bail',
+                'nullable',
+                'date',
+                'required_with:end_date',
+                'before_or_equal:end_date'
+            ],
+            'end_date' => [
+                'nullable',
+                'date',
+                'required_with:start_date',
+                'after_or_equal:start_date'
+            ],
         ]);
 
         // If the client doesn't provide start_date, we start from 7 days ago
