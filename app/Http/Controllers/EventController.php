@@ -11,7 +11,7 @@ enum EventType: string {
     case EPISODE_DOWNLOADED = 'episode.downloaded';
 }
 
-class PodcastEpisodeController extends Controller
+class EventController extends Controller
 {
     public function webhookHandler(Request $request)
     {
@@ -34,10 +34,5 @@ class PodcastEpisodeController extends Controller
                 Log::info("Unknown event type found: {$request->type}");
                 return response()->json(['message' => 'Unknown event type found.'], 422);
         }
-    }
-
-    public function stats(Request $request)
-    {
-        return response()->json(['message' => 'Stats!'], 200);
     }
 }

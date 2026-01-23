@@ -1,9 +1,8 @@
 <?php
 
-use App\Http\Controllers\PodcastEpisodeController;
+use App\Http\Controllers\EventController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/webhook', [PodcastEpisodeController::class, 'webhookHandler']);
+Route::post('/webhook', [EventController::class, 'webhookHandler']);
 
-Route::get('/episodes/{episode_id}/stats', [PodcastEpisodeController::class, 'stats']);

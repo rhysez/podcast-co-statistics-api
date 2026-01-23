@@ -1,4 +1,4 @@
-### Design document for the Radio.co take home task
+## Design document for the Radio.co take home task
 
 
 This design document has been written as part of my implementation of the take-home task given to me by Radio.co. I wanted to create this design document so that I could get my thoughts down in writing, explain my decisions and document any areas of improvement. At Quantavia, I will sometimes write design documents for certain features, so I thought it would be appropriate to do the same here.
@@ -7,7 +7,7 @@ For this task I’ve chosen to use Laravel as the backend framework due to my ex
 
 
 
-#### Containerisation
+### Containerisation
 
 This API is containerised using Docker. There are multiple reasons why I would choose to containerise this API, especially in a production context:
 
@@ -17,7 +17,7 @@ This API is containerised using Docker. There are multiple reasons why I would c
 
 - If this were being deployed to production and scaled up, we would get the benefit of container orchestration solutions like Kubernetes, which would allow us to automate the scaling up/down of services (pods) to fit the traffic. 
 
-#### Notable classes
+### Notable classes
 
 This is a list of the notable classes used in the system:
 
@@ -25,7 +25,7 @@ This is a list of the notable classes used in the system:
 - **PodcastEpisodeController**: Responsible for handling the requests associated with a podcast episode, such as the webhook and stats.
 - **ProcessDownload**: Responsible for handling a queueable job where a PodcastEpisodeDownload record is created.
 
-#### Part 1: Storing download data with a webhook
+### Part 1: Storing download data with a webhook
 
 This first part of this task requires a webhook that can be interfaced with via a POST request.
 To ensure that this endpoint is maintainable for future extension, I created an enum which is
@@ -84,3 +84,7 @@ class ProcessPodcastEpisodeDownload implements ShouldQueue
     }
 }
 ```
+
+### Part 2: Providing time-series down data to the client
+
+This part of the task requires implementation of a GET endpoint where the client can request time-series download data.

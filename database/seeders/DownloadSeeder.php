@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\Download;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class DownloadSeeder extends Seeder
 {
@@ -13,7 +15,34 @@ class DownloadSeeder extends Seeder
      */
     public function run(): void
     {
-        Download::factory()->count(10)->create();
-        $this->command->info("Seeded downloads");
+        // I wanted to create a hard-coded episode ID so we can track one episode over time
+        // Ideally, we'd have a PodcastEpisode model which represents an episode
+        $targetEpisodeId = '88a0e4c0-0000-41d4-a716-446655440000';
+        $podcastId = Str::uuid();
+        $numberOfDaysToSimulate = 14;
+        $downloadMultiplier = 2;
+        $numberOfNoiseDownloads = 50;
+
+        $this->command->info("Seeding data for episode: {$targetEpisodeId}");
+
+        for ($i = $numberOfDaysToSimulate; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+
+            // For each day, I'm increasing the number of downloads, to set a 'trend' in the data.
+            $dailyVolume = rand(10, 20) + ($numberOfDaysToSimulate - $i) * $downloadMultiplier;
+
+            Download::factory()
+                ->count($dailyVolume)
+                ->create([
+                    'episode_id' => $targetEpisodeId,
+                    'podcast_id' => $podcastId,
+                    'occurred_at' => $date->copy()->setHour(rand(9, 17)), // Business hours
+                ]);
+        }
+
+        // Adding a load of random download records to create noise.
+        Download::factory()->count($numberOfNoiseDownloads)->create();
+
+        $this->command->info("Seeded 14 days of download data");
     }
 }
