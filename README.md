@@ -5,6 +5,13 @@ This design document has been written as part of my implementation of the take-h
 
 For this task I’ve chosen to use Laravel as the backend framework due to my existing familiarity with it from my current role.
 
+### Running the project and seeding the downloads table
+1. The first step is to compose the containers using `sail build`. If you don't have the sail shell alias set up, run `./vendor/bin/sail build`. 
+2. Start the containers using `sail up -d`.
+3. Migrate your database and subsequently seed it using `sail artisan migrate:fresh --seed`. 
+4. Run the tests using `sail test`. 
+
+My `.env` is slightly different to `.env.example` it contains the database credentials for MariaDB, which I chose to use for this task. If you need this during the interview, please let me know.
 
 
 ### Containerisation
@@ -178,5 +185,3 @@ Once I'd instantiated the `CarbonPeriod`, I just needed to iterate over it and p
 
 Another motivation for using `CarbonPeriod` was so that the frontend team would have access to every day during that period, rather than only the days where the episode was downloaded. 
 For these particular days, their `download_count` was assigned to zero (or `defaultValueForNoDownloads`).
-
-
