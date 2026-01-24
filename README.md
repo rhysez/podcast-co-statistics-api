@@ -86,7 +86,7 @@ database in a format that can be easily queried in the future.
 
 In order to improve the response time of the endpoint, I made sure that the actual creation of the download record in the
 database is handled in a queue using a job named `ProcessDownload`. As soon as the webhook validates 
-the JSON, and also validates that the episode hasn't already been downloaded, the job is dispatched to the queue. This ensures
+the JSON, and also validates that this exact download record doesn't already exist, the job is dispatched to the queue. This ensures
 that the user only needs to wait for indication that the request was valid, rather than wait for the download record itself
 to be created.
 
@@ -209,7 +209,7 @@ For these particular days, their `download_count` was assigned to zero (or `defa
 
 ### What I would do differently/improve if this were to be deployed to production
 
-- I would construct the models, relationships, and tests required for a Podcast and Episode (alongside Download). This would make the API more maintainable, especially if podcast-specific or episode-specific features were to be added. It would allow us to aggregate data based on the relationships between podcasts, episodes and downloads, rather than purely downloads.
+- I would add an Episode model which has a one-to-many relationship with the Download model. This would allow us to get all downloads for an episode directly from the Episode model, e.g. `Episode->downloads()`.
 - I would improve the flexibility of the `start_date` and `end_date` query parameters to ensure that each parameter could be provided in isolation. 
 - I would add code linting via Laravel Pint to ensure that the code is formatted/linted during CI/CD. I would also do the same for unit tests.
 - I would consider adding pagination for large time series data sets. At the moment, there is nothing stopping somebody from requesting data for an extraordinarily long time period, and this could lead to long response times. To help reduce response times I would paginate the responses and allow the frontend team to control this pagination via query parameters like `start` and `limit`.
