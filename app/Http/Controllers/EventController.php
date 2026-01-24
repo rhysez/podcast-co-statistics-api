@@ -27,8 +27,9 @@ class EventController extends Controller
 
         switch ($request->type) {
             case EventType::EPISODE_DOWNLOADED->value:
+                // This is definitely an edge case, but prevents duplicate download event records.
                 if (Download::where('event_id', $request->event_id)->exists()) {
-                    return response()->json(['message' => 'Episode already downloaded'], 400);
+                    return response()->json(['message' => 'A download with this event_id already exists'], 400);
                 }
                 ProcessDownload::dispatch($request->all());
                 return response()->json(['message' => 'Episode download has been queued for processing'], 202);

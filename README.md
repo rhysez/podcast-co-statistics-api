@@ -10,10 +10,27 @@ For this task I’ve chosen to use Laravel as the backend framework due to my ex
 2. Start the containers using `sail up -d`.
 3. Migrate your database and subsequently seed it using `sail artisan migrate:fresh --seed`. 
 4. Run the tests using `sail test`. 
+5. Start running the default queue using `sail artisan queue:work` (this is for the download processing job).
 
 My `.env` is slightly different to `.env.example` as it contains the database credentials for MariaDB, which I chose to use for this task. If you need this during the interview, please let me know.
 
 While working on this task, I used Postman to interface with the API and check response data.
+
+If you want to make a webhook request in Postman to check the response, feel free to use this dummy request body:
+```json
+{
+    "type": "episode.downloaded",
+    "event_id": "550e8400-e29b-41d4-a716-446655440000",
+    "occurred_at": "2026-01-24T18:50:00Z",
+    "data": {
+        "episode_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+        "podcast_id": "123e4567-e89b-12d3-a456-426614174000"
+    }
+}
+```
+
+If you want to request time series data, and you've seeded the database, you can make a GET request to this URL:
+`localhost/api/episodes/88a0e4c0-0000-41d4-a716-446655440000/stats`
 
 ### Containerisation
 
@@ -68,7 +85,7 @@ In `EventController`, the `webhook` method is responsible for validating the dow
 database in a format that can be easily queried in the future. 
 
 In order to improve the response time of the endpoint, I made sure that the actual creation of the download record in the
-database is handled in a Redis queue using a job named `ProcessDownload`. As soon as the webhook validates 
+database is handled in a queue using a job named `ProcessDownload`. As soon as the webhook validates 
 the JSON, and also validates that the episode hasn't already been downloaded, the job is dispatched to the queue. This ensures
 that the user only needs to wait for indication that the request was valid, rather than wait for the download record itself
 to be created.
