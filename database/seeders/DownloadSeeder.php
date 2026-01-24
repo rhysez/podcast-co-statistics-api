@@ -15,8 +15,8 @@ class DownloadSeeder extends Seeder
      */
     public function run(): void
     {
-        // I wanted to create a hard-coded episode ID so we can track one episode over time
-        // Ideally, we'd have a PodcastEpisode model which represents an episode
+        // I wanted to create a hard-coded episode ID so we can track one episode over time during the interview
+        // Ideally, we'd have a PodcastEpisode model which represents an episode and can be related to the Download model
         $targetEpisodeId = '88a0e4c0-0000-41d4-a716-446655440000';
         $podcastId = Str::uuid();
         $numberOfDaysToSimulate = 14;
@@ -28,11 +28,11 @@ class DownloadSeeder extends Seeder
         for ($i = $numberOfDaysToSimulate; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
 
-            // For each day, I'm increasing the number of downloads, to set a 'trend' in the data.
-            $dailyVolume = rand(10, 20) + ($numberOfDaysToSimulate - $i) * $downloadMultiplier;
+            // Creates somewhat of a variance in the number of downloads for each iteration
+            $downloadCountForThisDay = rand(10, 20) + ($numberOfDaysToSimulate - $i) * $downloadMultiplier;
 
             Download::factory()
-                ->count($dailyVolume)
+                ->count($downloadCountForThisDay)
                 ->create([
                     'episode_id' => $targetEpisodeId,
                     'podcast_id' => $podcastId,
