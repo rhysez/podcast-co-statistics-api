@@ -48,8 +48,8 @@ This is a list of the notable classes used in the system:
 
 - **Download**: Responsible for representing a model record in the 'downloads' table.
 - **EpisodeController**: Responsible for providing the time series data for episode download records over time.
-- **EventController**: Responsible for handling the requests associated with a podcast episode, such as the webhook and stats.
-- **ProcessDownload**: Responsible for handling a queueable job where a PodcastEpisodeDownload record is created.
+- **EventController**: Responsible for handling the webhook event and dispatching jobs to queues based on the event type.
+- **ProcessDownload**: Responsible for handling a queueable job where a Download record is created.
 - Test classes are implemented in `tests/Feature/*`.
 - Factory classes are implemented in `database/factories/*`
 - Seeder classes are implemented in `database/seeders/*`
