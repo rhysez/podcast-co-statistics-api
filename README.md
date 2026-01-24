@@ -47,7 +47,7 @@ This API is containerised using Docker. There are multiple reasons why I would c
 This is a list of the notable classes used in the system:
 
 - **Download**: Responsible for representing a model record in the 'downloads' table.
-- **DownloadController**: Responsible for providing time series data for download records over time.
+- **EpisodeController**: Responsible for providing the time series data for episode download records over time.
 - **EventController**: Responsible for handling the requests associated with a podcast episode, such as the webhook and stats.
 - **ProcessDownload**: Responsible for handling a queueable job where a PodcastEpisodeDownload record is created.
 - Test classes are implemented in `tests/Feature/*`.
@@ -120,7 +120,7 @@ This part of the task requires implementation of a GET endpoint where the client
 
 The time series data can be requested at `/api/episodes/{id}/stats`, with optional `start_date` and `end_date` query parameters.
 
-The request itself is handled by the `index` method on `DownloadController`. I'll step through this method and explain my 
+The request itself is handled by the `stats` method on `EpisodeController`. I'll step through this method and explain my 
 thought process below.
 
 ```php

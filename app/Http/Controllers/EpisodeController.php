@@ -8,9 +8,9 @@ use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class DownloadController extends Controller
+class EpisodeController extends Controller
 {
-    public function index(Request $request, string $episodeId)
+    public function stats(Request $request, string $episodeId)
     {
         $request->validate([
             'start_date' => [
