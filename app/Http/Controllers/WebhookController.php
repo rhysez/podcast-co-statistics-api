@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ProcessDownload;
 use App\Models\Download;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -13,9 +14,9 @@ enum EventType: string {
     case EPISODE_DOWNLOADED = 'episode.downloaded';
 }
 
-class WebhookEventController extends Controller
+class WebhookController extends Controller
 {
-    public function webhookHandler(Request $request)
+    public function webhookHandler(Request $request): JsonResponse
     {
         $request->validate([
             'type' => 'required|string',
