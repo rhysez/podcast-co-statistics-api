@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Download;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
+use App\Services\DownloadTimeSeriesService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class DownloadController extends Controller
 {
-    public function stats(Request $request, string $episodeId)
+    public function statsForEpisode(Request $request, string $episodeId): JsonResponse
     {
         $request->validate([
             'start_date' => [
@@ -28,43 +26,14 @@ class DownloadController extends Controller
             ],
         ]);
 
-        // If the client doesn't provide start_date, we start from 7 days ago
-        if ($request->filled('start_date')) {
-            $startDate = Carbon::parse($request->start_date)->startOfDay();
-        } else {
-            $startDate = Carbon::now()->subDays(7)->startOfDay();
-        }
+        $statsService = new DownloadTimeSeriesService();
 
-        // And if client doesn't provide end_date, we end on today
-        if ($request->filled('end_date')) {
-            $endDate = Carbon::parse($request->end_date)->endOfDay();
-        } else {
-            $endDate = Carbon::now()->endOfDay();
-        }
+        $dates = $statsService->dateRange($request);
 
-        $downloadStats = Download::where('episode_id', $episodeId)
-            ->whereBetween('occurred_at', [$startDate, $endDate])
-            ->select([
-                DB::raw('DATE(occurred_at) as date'),
-                DB::raw('COUNT(*) as download_count')
-            ])
-            ->groupBy('date')
-            ->orderBy('occurred_at', 'ASC')
-            ->get();
+        $startDate = $dates['start_date'];
+        $endDate = $dates['end_date'];
 
-        $downloadCountsByDate = $downloadStats->pluck('download_count', 'date');
-        $tsData = [];
-        $period = CarbonPeriod::create($startDate, '1 day', $endDate);
-        $defaultValueForNoDownloads = 0;
-
-        foreach ($period as $date) {
-            $dbDate = $date->format('Y-m-d');
-            $displayDate = $date->format('d-m-Y');
-            $tsData[] = [
-                'date'  => $displayDate,
-                'download_count' => $downloadCountsByDate->get($dbDate, $defaultValueForNoDownloads),
-            ];
-        }
+        $tsData = $statsService->aggregateByEpisode($episodeId, $startDate, $endDate);
 
         return response()->json([
             'episode_id' => $episodeId,
