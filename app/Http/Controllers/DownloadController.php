@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class DownloadController extends Controller
 {
-    public function episodeStats(Request $request, string $episodeId)
+    public function statsForEpisode(Request $request, string $episodeId)
     {
         $request->validate([
             'start_date' => [
