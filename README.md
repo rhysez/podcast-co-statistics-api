@@ -209,7 +209,6 @@ For these particular days, their `download_count` was assigned to zero (or `defa
 
 ### What I would do differently/improve if this were to be deployed to production
 
-- I would add an Episode model which has a one-to-many relationship with the Download model. This would allow us to get all downloads for an episode directly from the Episode model, e.g. `Episode->downloads()`.
 - Once the Episode and Podcast models/relationships are in place, I would ensure that downloads cannot be registered for episodes and podcasts that do not exist.
 - I would encapsulate the time series logic into a `TimeSeriesHandler` class.
 - I would improve the flexibility of the `start_date` and `end_date` query parameters to ensure that each parameter could be provided in isolation. 
