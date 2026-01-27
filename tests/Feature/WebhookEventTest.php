@@ -1,12 +1,16 @@
 <?php
 
+use App\Jobs\ProcessDownload;
 use App\Models\Download;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
 test('webhook stores data successfully', function () {
+    Queue::fake();
+
     $payload = [
         'type' => 'episode.downloaded',
         'event_id' => Str::uuid()->toString(),
@@ -20,10 +24,13 @@ test('webhook stores data successfully', function () {
     $response = $this->postJson('/api/webhook', $payload);
 
     $response->assertStatus(202);
-    $this->assertDatabaseCount('downloads', 1);
+
+    Queue::assertPushed(ProcessDownload::class);
 });
 
 test('webhook returns 422 on invalid event type', function () {
+    Queue::fake();
+
     $payload = [
         'type' => 'episode.unknown_event',
         'event_id' => Str::uuid()->toString(),
@@ -38,9 +45,13 @@ test('webhook returns 422 on invalid event type', function () {
 
     $response->assertStatus(422);
     $response->assertJsonFragment(['message' => 'Unknown event type found.']);
+
+    Queue::assertNothingPushed();
 });
 
 test('webhook returns a 409 if an episode has already been downloaded', function () {
+    Queue::fake();
+
     $payload = [
         'type' => 'episode.downloaded',
         'event_id' => Str::uuid()->toString(),
@@ -61,10 +72,11 @@ test('webhook returns a 409 if an episode has already been downloaded', function
     $response = $this->postJson('/api/webhook', $payload);
 
     $response->assertStatus(409);
-    $this->assertDatabaseCount('downloads', 1);
     $this->assertDatabaseHas('downloads', [
         'event_id' => $existingDownload->event_id,
         'podcast_id' => $existingDownload->podcast_id,
         'episode_id' => $existingDownload->episode_id,
     ]);
+
+    Queue::assertNothingPushed();
 });
