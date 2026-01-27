@@ -13,7 +13,7 @@ enum EventType: string {
     case EPISODE_DOWNLOADED = 'episode.downloaded';
 }
 
-class EventController extends Controller
+class WebhookEventController extends Controller
 {
     public function webhookHandler(Request $request)
     {
