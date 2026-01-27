@@ -80,3 +80,43 @@ test('webhook returns a 409 if an episode has already been downloaded', function
 
     Queue::assertNothingPushed();
 });
+
+test('download job is pushed on a successful webhook request', function () {
+    Queue::fake([
+        ProcessDownload::class
+    ]);
+
+    $payload = [
+        'type' => 'episode.downloaded',
+        'event_id' => Str::uuid()->toString(),
+        'occurred_at' => now()->toIso8601String(),
+        'data' => [
+            'episode_id' => Str::uuid()->toString(),
+            'podcast_id' => Str::uuid()->toString()
+        ]
+    ];
+
+    $this->postJson('/api/webhook', $payload);
+
+    Queue::assertPushed(ProcessDownload::class);
+});
+
+test('download job is not pushed on an erroneous webhook request', function () {
+    Queue::fake([
+        ProcessDownload::class
+    ]);
+
+    $payload = [
+        'type' => 'episode.unknown_event',
+        'event_id' => Str::uuid()->toString(),
+        'occurred_at' => now()->toIso8601String(),
+        'data' => [
+            'episode_id' => Str::uuid()->toString(),
+            'podcast_id' => Str::uuid()->toString()
+        ]
+    ];
+
+    $this->postJson('/api/webhook', $payload);
+
+    Queue::assertNotPushed(ProcessDownload::class);
+});
