@@ -8,7 +8,7 @@ use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class EpisodeController extends Controller
+class DownloadController extends Controller
 {
     public function stats(Request $request, string $episodeId)
     {
