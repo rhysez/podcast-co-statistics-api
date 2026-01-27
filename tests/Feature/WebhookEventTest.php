@@ -40,7 +40,7 @@ test('webhook returns 422 on invalid event type', function () {
     $response->assertJsonFragment(['message' => 'Unknown event type found.']);
 });
 
-test('webhook returns a 400 if an episode has already been downloaded', function () {
+test('webhook returns a 409 if an episode has already been downloaded', function () {
     $payload = [
         'type' => 'episode.downloaded',
         'event_id' => Str::uuid()->toString(),
@@ -60,7 +60,7 @@ test('webhook returns a 400 if an episode has already been downloaded', function
 
     $response = $this->postJson('/api/webhook', $payload);
 
-    $response->assertStatus(400);
+    $response->assertStatus(409);
     $this->assertDatabaseCount('downloads', 1);
     $this->assertDatabaseHas('downloads', [
         'event_id' => $existingDownload->event_id,
