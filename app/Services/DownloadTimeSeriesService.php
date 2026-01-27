@@ -6,7 +6,7 @@ use App\Models\Download;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 
-class TimeSeriesStatsService
+class DownloadTimeSeriesService
 {
     private function aggregate($query, $startDate, $endDate)
     {

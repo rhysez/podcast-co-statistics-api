@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Download;
+use App\Services\DownloadTimeSeriesService;
 use App\Services\TimeSeriesStatsService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -43,7 +44,7 @@ class DownloadController extends Controller
             $endDate = Carbon::now()->endOfDay();
         }
 
-        $statsService = new TimeSeriesStatsService();
+        $statsService = new DownloadTimeSeriesService();
         $tsData = $statsService->aggregateByEpisode($episodeId, $startDate, $endDate);
 
         return response()->json([
