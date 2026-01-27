@@ -3,12 +3,33 @@
 namespace App\Services;
 
 use App\Models\Download;
+use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DownloadTimeSeriesService
 {
-    private function aggregate($query, $startDate, $endDate)
+    public function dateRange(Request $request): array
+    {
+        $startDate = Carbon::now()->subDays(7)->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+
+        if ($request->filled('start_date')) {
+            $startDate = Carbon::parse($request->start_date)->startOfDay();
+        }
+
+        if ($request->filled('end_date')) {
+            $endDate = Carbon::parse($request->end_date)->endOfDay();
+        }
+
+        return [
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ];
+    }
+
+    private function aggregate($query, $startDate, $endDate): array
     {
         $downloadStats = $query
             ->whereBetween('occurred_at', [$startDate, $endDate])

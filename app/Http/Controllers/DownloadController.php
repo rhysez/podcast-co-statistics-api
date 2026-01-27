@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Download;
 use App\Services\DownloadTimeSeriesService;
-use App\Services\TimeSeriesStatsService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -12,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class DownloadController extends Controller
 {
-    public function stats(Request $request, string $episodeId)
+    public function episodeStats(Request $request, string $episodeId)
     {
         $request->validate([
             'start_date' => [
@@ -30,21 +29,13 @@ class DownloadController extends Controller
             ],
         ]);
 
-        // If the client doesn't provide start_date, we start from 7 days ago
-        if ($request->filled('start_date')) {
-            $startDate = Carbon::parse($request->start_date)->startOfDay();
-        } else {
-            $startDate = Carbon::now()->subDays(7)->startOfDay();
-        }
-
-        // And if client doesn't provide end_date, we end on today
-        if ($request->filled('end_date')) {
-            $endDate = Carbon::parse($request->end_date)->endOfDay();
-        } else {
-            $endDate = Carbon::now()->endOfDay();
-        }
-
         $statsService = new DownloadTimeSeriesService();
+
+        $dates = $statsService->dateRange($request);
+
+        $startDate = $dates['start_date'];
+        $endDate = $dates['end_date'];
+
         $tsData = $statsService->aggregateByEpisode($episodeId, $startDate, $endDate);
 
         return response()->json([
