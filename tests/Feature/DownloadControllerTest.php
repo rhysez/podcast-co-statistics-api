@@ -42,5 +42,20 @@ test('cannot receive time series data with future start date and past end date',
 });
 
 
+test('cannot receive time series data with invalid date formats', function () {
+    $seededEpisodeId = '88a0e4c0-0000-41d4-a716-446655440000';
+
+    $startDate = Carbon::now()->subDays(14)->startOfDay()->format('D-M-Y');
+    $endDate = Carbon::now()->addDays(14)->startOfDay()->format('D-M-Y');
+
+    $response = $this->json('GET', "/api/episodes/{$seededEpisodeId}/stats", [
+        'start_date' => $startDate,
+        'end_date' => $endDate
+    ]);
+
+    $response->assertStatus(422);
+});
+
+
 
 

@@ -2,13 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Download;
 use App\Services\DownloadTimeSeriesService;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class DownloadController extends Controller
 {
