@@ -30,7 +30,7 @@ test('download job creates a download record', function () {
     ]);
 });
 
-test('download job does not create duplicate download for same event_id', function () {
+test('download job throws exception if payload includes a duplicate event_id', function () {
     $eventId = Str::uuid()->toString();
 
     Download::factory()->create([
@@ -49,7 +49,8 @@ test('download job does not create duplicate download for same event_id', functi
     // I'm not explicitly handling the exception thrown by the job here because duplicates are prevented
     // in the webhook controller, but if this job is dispatched from other areas of the API then I think we
     // may want to handle the duplicates in the job. Open to discussion on this, I think the main issue with
-    // handling the exception in the job is that it doesn't provide any response to the user's request.
+    // handling the exception in the job is that it doesn't provide any response to the user's request, so I've
+    // decided against doing it for now.
     $this->expectException(QueryException::class);
     (new ProcessDownload($payload))->handle();
 });
