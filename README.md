@@ -47,8 +47,8 @@ This API is containerised using Docker. There are multiple reasons why I would c
 This is a list of the notable classes used in the system:
 
 - **Download**: Responsible for representing a model record in the 'downloads' table.
-- **EpisodeController**: Responsible for providing the time series data for episode download records over time.
-- **EventController**: Responsible for handling the webhook event and dispatching jobs to queues based on the event type.
+- **DownloadController**: Responsible for providing the time series data for download records over time.
+- **WebhookController**: Responsible for handling the webhook and dispatching jobs to queues based on the event type.
 - **ProcessDownload**: Responsible for handling a queueable job where a Download record is created.
 - Test classes are implemented in `tests/Feature/*`.
 - Factory classes are implemented in `database/factories/*`
@@ -81,7 +81,7 @@ enum EventType: string {
         }
 ```
 
-In `EventController`, the `webhook` method is responsible for validating the download data and storing it in the 
+In `WebhookController`, the `webhook` method is responsible for validating the download data and storing it in the 
 database in a format that can be easily queried in the future. 
 
 In order to improve the response time of the endpoint, I made sure that the actual creation of the download record in the
@@ -120,10 +120,12 @@ This part of the task requires implementation of a GET endpoint where the client
 
 The time series data can be requested at `/api/episodes/{id}/stats`, with optional `start_date` and `end_date` query parameters.
 
-The request itself is handled by the `stats` method on `EpisodeController`. I'll step through this method and explain my 
+The request itself is handled by the `statsForEpisode` method on `DownloadController`. I'll step through this method and explain my 
 thought process below.
 
 ```php
+        public function statsForEpisode(Request $request, string $episodeId): JsonResponse
+    {
         $request->validate([
             'start_date' => [
                 'bail',
@@ -140,29 +142,33 @@ thought process below.
             ],
         ]);
 
-        // If the client doesn't provide start_date, we start from 7 days ago
-        if ($request->filled('start_date')) {
-            $startDate = Carbon::parse($request->start_date)->startOfDay();
-        } else {
-            $startDate = Carbon::now()->subDays(7)->startOfDay();
-        }
+        $statsService = new DownloadTimeSeriesService();
 
-        // And if client doesn't provide end_date, we end on today
-        if ($request->filled('end_date')) {
-            $endDate = Carbon::parse($request->end_date)->endOfDay();
-        } else {
-            $endDate = Carbon::now()->endOfDay();
-        }
+        $dates = $statsService->dateRange($request);
+
+        $startDate = $dates['start_date'];
+        $endDate = $dates['end_date'];
+
+        $tsData = $statsService->aggregateByEpisode($episodeId, $startDate, $endDate);
+
+        return response()->json([
+            'episode_id' => $episodeId,
+            'range' => [
+                'start' => $startDate?->toIso8601String(),
+                'end'   => $endDate?->toIso8601String(),
+            ],
+            'data' => $tsData
+        ]);
+    }
 ```
-In the above code, the request is validated, and then the actual start/end dates that will be used to query the database 
-are assigned conditionally based on the availability of the query parameters.
-
-Both parameters are nullable, meaning that the frontend team can request without these parameters and get the last 7 days.
-Alternatively, they can provide `start_date` and `end_date`, but not in isolation. The `start_date` also cannot be greater than 
-`end_date`, and vice versa.
+This method makes use of a service class named `DownloadTimeSeriesService` which handles the date range generation and time series data aggregation logic.
+The benefit of this is that, because this logic is abstracted, we can re-use it elsewhere in other contexts. We could also extend the class to support other methods 
+in the future, such as `aggregateByPodcast` if we wanted to get data based on podcasts rather than specific episodes.
 
 ```php
-        $downloadStats = Download::where('episode_id', $episodeId)
+    private function aggregate($query, $startDate, $endDate): array
+    {
+        $downloadStats = $query
             ->whereBetween('occurred_at', [$startDate, $endDate])
             ->select([
                 DB::raw('DATE(occurred_at) as date'),
@@ -186,26 +192,15 @@ Alternatively, they can provide `start_date` and `end_date`, but not in isolatio
             ];
         }
 
-        return response()->json([
-            'episode_id' => $episodeId,
-            'range' => [
-                'start' => $startDate?->toIso8601String(),
-                'end'   => $endDate?->toIso8601String(),
-            ],
-            'data' => $tsData
-        ]);
+        return $tsData;
+    }
 ```
-The downloads are queried for a specific episode, between the start and end date. To get the data that I needed for the time series structure,
-I decided to select the `occurred_at` column and cast this to a new field named `date` because this would make more sense semantically to the frontend team, 
-and create a new field named `download_count` which is derived from the total number of records. Finally, the data is grouped and sorted.
+The actual time series aggregation is handled by the above method in `DownloadTimeSeriesService`. The base query is decided by the `$query` parameter, 
+which gives us the flexibility to aggregate other data in the future. The rest of the query handles the sorting of the data and casting of columns so that 
+we can make use of `date` and `download_count` which are key to the time series data.
 
-Due to time series data being generally represented as many points over some period of time, I needed to be able to iterate across each day between the specified 
-start and end dates. To achieve this, I used `CarbonPeriod` to create an iterable collection of days between the start and end dates. 
-
-Once I'd instantiated the `CarbonPeriod`, I just needed to iterate over it and push the new `date` and `download_count` data to a new array named `tsData` for each step in the loop.
-
-Another motivation for using `CarbonPeriod` was so that the frontend team would have access to every day during that period, rather than only the days where the episode was downloaded. 
-For these particular days, their `download_count` was assigned to zero (or `defaultValueForNoDownloads`).
+The `date` and `download_count` fields are plucked so that we can use them later. I decided to use `CarbonPeriod` to create an iterable list of dates between 
+the date range specified, and I'm using a foreach loop to iterate over this and push the data to the `tsData` array. 
 
 ### What I would do differently/improve if this were to be deployed to production
 
