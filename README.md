@@ -1,10 +1,3 @@
-## Design document for the Radio.co take home task
-
-
-This design document has been written as part of my implementation of the take-home task given to me by Radio.co. I wanted to create this design document so that I could get my thoughts down in writing, explain my decisions and document any areas of improvement. At Quantavia, I will sometimes write design documents for certain features, so I thought it would be appropriate to do the same here.
-
-For this task I’ve chosen to use Laravel as the backend framework due to my existing familiarity with it from my current role.
-
 ### Running the project and seeding the downloads table
 1. The first step is to compose the containers using `sail build`. If you don't have the sail shell alias set up, run `./vendor/bin/sail build`. 
 2. Start the containers using `sail up -d`.
@@ -200,15 +193,5 @@ which gives us the flexibility to aggregate other data in the future. The rest o
 we can make use of `date` and `download_count` which are key to the time series data.
 
 The `date` and `download_count` fields are plucked so that we can use them later. I decided to use `CarbonPeriod` to create an iterable list of dates between 
-the date range specified, and I'm using a foreach loop to iterate over this and push the data to the `tsData` array. 
-
-### What I would do differently/improve if this were to be deployed to production
-
-- Once the Episode and Podcast models/relationships are in place, I would ensure that downloads cannot be registered for episodes and podcasts that do not exist.
-- I would encapsulate the time series logic into a `TimeSeriesHandler` class.
-- I would improve the flexibility of the `start_date` and `end_date` query parameters to ensure that each parameter could be provided in isolation. 
-- I would add code linting via Laravel Pint to ensure that the code is formatted/linted during CI/CD. I would also do the same for unit tests.
-- I would consider adding pagination for large time series data sets. At the moment, there is nothing stopping somebody from requesting data for an extraordinarily long time period, and this could lead to long response times. To help reduce response times I would paginate the responses and allow the frontend team to control this pagination via query parameters like `start` and `limit`.
-- If very large data sets were requested, I would probably try to cache this data using Redis. I would probably set a lifetime on the cached data so that it may be refreshed once the lifetime expires. This is really easy to do in Laravel because `Cache::get()` can take a closure which will query the database if the cache key doesn't exist.
-- I would ensure that the API is sufficiently rate-limited. This is done by default in Laravel, however I would communicate with the frontend team to establish a sensible rate limit requirement.
+the date range specified, and I'm using a foreach loop to iterate over this and push the data to the `tsData` array.
 
